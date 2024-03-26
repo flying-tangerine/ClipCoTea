@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 
 class CLIPVEmodel(nn.Module):
-    # 同时更新clip text encoder& mlp
     def __init__(self, clip, input_dim, hidden_size1, hidden_size2):
         super().__init__()
         self.clip = clip
@@ -17,10 +16,12 @@ class CLIPVEmodel(nn.Module):
         self.bn1 = nn.BatchNorm1d(num_features=hidden_size2)
         self.fc3 = nn.Linear(in_features=hidden_size2, out_features=output_size)
 
-    def forward(self, image_features, texts): 
-        text_features = self.clip.encode_text(texts) #归一化可以实现吗？
+    def forward(self, image_features, texts):
+        output = self.clip(texts, return_dict=True) # using transformer clip
+        text_features = output.text_embeds
+        # text_features = self.clip.encode_text(texts) # directly load clip from github
         
-        image_features = image_features.view(image_features.size(0), -1)
+        image_features = image_features.view(image_features.size(0), -1)  # could add normalization?
         text_features = text_features.view(text_features.size(0), -1)
         image_features = self.dropout(image_features)
         text_features = self.dropout(text_features)
