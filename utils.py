@@ -35,19 +35,20 @@ def train_epoch(model, dataloader, dataset, optimizer, loss, device):
     for batch in tqdm(dataloader, desc="Training"):
         optimizer.zero_grad()
         images, texts, labels = batch
-        images = images.to(torch.float16).to(device) # float32
+        images = images.to(device) # float32 to(torch.float32)
         texts = texts.to(device)
         labels = labels.to(device)
 
         preds = model(images, texts)
         batch_loss = loss(preds, labels)
         batch_loss.backward()
-        if device == "cpu":
-            optimizer.step()
-        else: 
-            model.float()
-            optimizer.step()
-            clip.model.convert_weights(model)
+        optimizer.step()
+        # if device == "cpu":
+        #     optimizer.step()
+        # else: 
+        #     model.float()
+        #     optimizer.step()
+        #     clip.model.convert_weights(model)
 
         total_loss += batch_loss.item()
         num_correct += (preds.argmax(1) == labels).sum().item()
@@ -65,7 +66,7 @@ def validate(model, dataloader, dataset, loss, device):
     with torch.no_grad():
         for batch in tqdm(dataloader, desc="Validation"):
             images, texts, labels = batch
-            images = images.to(torch.float32).to(device)
+            images = images.to(device)
             texts = texts.to(device)
             labels = labels.to(device)
 
