@@ -3,7 +3,9 @@ import clip
 import torch
 
 def train_model(model, train_dloader, train_dset,
-                val_dloader, val_dset, optimizer, loss, device, epochs=10, early_stopper=None):
+                val_dloader, val_dset, 
+                optimizer, loss, device, 
+                epochs=10, early_stopper=None):
     train_loss_history = []
     train_accuracy_history = []
     val_loss_history = []
@@ -41,6 +43,7 @@ def train_epoch(model, dataloader, dataset, optimizer, loss, device):
 
         preds = model(images, texts)
         batch_loss = loss(preds, labels)
+        print(batch_loss.item())
         batch_loss.backward()
         optimizer.step()
         # if device == "cpu":

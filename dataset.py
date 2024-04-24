@@ -1,5 +1,6 @@
 from PIL import Image
 import clip
+# import cn_clip.clip as clip
 import torch
 from torch.utils.data import Dataset, DataLoader
 
@@ -22,8 +23,6 @@ class NLIVEdataset(Dataset):
 
         image_features = model.encode_image(images)
     #     text_features = model.encode_text(texts)
-    #     image_features = image_features / image_features.norm(dim=1, keepdim=True)
-    #     text_features = text_features / text_features.norm(dim=1, keepdim=True)
         return image_features, texts, labels
 
     def get_loader(self, batch_size):

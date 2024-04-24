@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from collections import OrderedDict
+from transformers import CLIPConfig
 
 class CLIPVEmodel(nn.Module):
     def __init__(self, clip, input_dim, hidden_size1, hidden_size2):
@@ -21,6 +22,11 @@ class CLIPVEmodel(nn.Module):
         #     ("fc3", nn.Linear(in_features=hidden_size2, out_features=output_size))
         # ]))
 
+        # config = CLIPConfig()
+        # self.projection_dim = config.projection_dim # 512
+        # self.text_embed_dim = config.text_config.hidden_size # 512
+        # self.text_projection = nn.Linear(self.text_embed_dim, self.projection_dim, bias=False)
+
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.1)
         self.bn0 = nn.BatchNorm1d(num_features=self.input_size)
@@ -30,14 +36,17 @@ class CLIPVEmodel(nn.Module):
         self.fc3 = nn.Linear(in_features=hidden_size2, out_features=output_size)
 
     def forward(self, image_features, texts):
-        output = self.clip(texts, return_dict=True) # using transformer clip
+        output = self.clip(texts, return_dict=True) # output_hidden_states=True, using transformer clip
         text_features = output.text_embeds
         # text_features = self.clip.encode_text(texts) # directly load clip from github
+
+        # pooled_output = text_outputs[1]
+        # pooled_output = self.text_projection(pooled_output)
         
         image_features = image_features.view(image_features.size(0), -1)
         text_features = text_features.view(text_features.size(0), -1)
-        image_features = image_features / image_features.norm(dim=1, keepdim=True) # normalization
-        text_features = text_features / text_features.norm(dim=1, keepdim=True)
+        image_features /= image_features.norm(p=2, dim=-1, keepdim=True) # normalization
+        text_features /= text_features.norm(p=2, dim=-1, keepdim=True)
         image_features = self.dropout(image_features)
         text_features = self.dropout(text_features)
         
